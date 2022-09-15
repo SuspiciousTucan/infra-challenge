@@ -1,0 +1,38 @@
+#
+# Provision an ubuntu based virtual host with many useful tools
+# used throughout the provisioning process of AWS cloud environments.
+# Create the vagrant environment by entering this folder and running:
+# 	$ vagrant up
+# Once provisioned it is possible to connect to the guest machine from the host
+# via ssh:
+# 	$ vagrant ssh
+# To pause the machine:
+# 	$ vagrant halt
+#
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "ubuntu/focal64"
+  config.vm.define "hivemind-infra-challenge"
+  config.vm.box_check_update = true
+
+	config.vm.provider "virtualbox" do |vb|
+    vb.name = "infra-challenge"
+    vb.gui = false
+  end
+
+  config.vm.network "forwarded_port", guest: 8080, host: 8888
+
+  config.vm.synced_folder "..", "/home/vagrant/infra-challenge"
+
+	config.vm.provision "file", source: "./config", destination: "/tmp/config"
+
+  config.vm.provision :shell do |shell|
+      shell.path = "root-provisioning.sh"
+  end
+
+  config.vm.provision :shell do |shell|
+      shell.privileged = false
+      shell.path = "vagrant-provisioning.sh"
+  end
+
+end
