@@ -75,6 +75,6 @@ rm "awscliv2.zip" "awscliv2.sig" "aws.pub"
 #
 wget -O "eksctl.tar.gz" -o "/tmp/wget_eksctl.log" "$EKSCTL_REL_URL"
 tar -xzf "eksctl.tar.gz" "eksctl" && install -o root -g root -m 0755 "eksctl" "$EKSCTL_BIN"
-rm "eksctl.tar.gz"
+rm "eksctl.tar.gz" "eksctl"
 #
 # ------------------------------- /EKSCTL ------------------------------------ #
