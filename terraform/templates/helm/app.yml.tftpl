@@ -1,0 +1,50 @@
+forceNamespace: default
+
+server:
+  enabled: true
+
+  ingress:
+    enabled: true
+    ingressClassName: "alb"
+    annotations:
+      alb.ingress.kubernetes.io/scheme: "internet-facing"
+      alb.ingress.kubernetes.io/target-type: "ip"
+    hosts:
+      - test.example.com
+
+  name: "server"
+
+  replicas: 1
+
+  strategy: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 1
+
+  service:
+    enabled: true
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "external"
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
+      service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+
+  greeter:
+    image:
+      repository: ${ image_repository }
+      name: ${ image_name }
+      tag: "latest"
+      pullPolicy: "IfNotPresent"
+
+    configFromSecret: false
+
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+
+    env:
+      HOSTNAME: "my-verry-special-host"

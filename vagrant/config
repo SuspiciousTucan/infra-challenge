@@ -1,13 +1,18 @@
 #!/bin/bash
 
+
+
+
 # --------------------------------- GENERIC ---------------------------------- #
 #
 OS="$(uname | tr '[:upper:]' '[:lower:]')"
 ARCH="$(dpkg --print-architecture)"
 ARCH_ALT="$(uname -m)"
 DISTRO="$(lsb_release -cs)"
+DISTRO_ID="$(lsb_release -is | tr '[:upper:]' '[:lower:]')"
 #
 # --------------------------------- /GENERIC --------------------------------- #
+
 
 
 
@@ -27,6 +32,31 @@ GO_REL_CHECKSUM="acc512fbab4f716a8f97a8b3fbaa9ddd39606a28be6c2515ef7c6c6311acffd
 
 
 
+
+# --------------------------------- DOCKER ----------------------------------- #
+#
+DOCKER_REPO_URL="https://download.docker.com/$OS/$DISTRO_ID"
+DOCKER_KEYRING="/usr/share/keyrings/docker.gpg"
+DOCKER_APT_SLIST="/etc/apt/sources.list.d/docker.list"
+#
+# --------------------------------- /DOCKER ---------------------------------- #
+
+
+
+
+# -------------------------------- HELM -------------------------------------- #
+#
+HELM_REPO_URL="https://baltocdn.com/helm"
+HELM_KEYRING="/usr/share/keyrings/helm.gpg"
+HELM_KEYRING_URL="$HELM_REPO_URL/signing.asc"
+HELM_REL_URL="$HELM_REPO_URL/stable/debian/"
+HELM_APT_LIST="/etc/apt/sources.list.d/helm-stable-debian.list"
+#
+# -------------------------------- /HELM ------------------------------------- #
+
+
+
+
 # --------------------------------- K8S -------------------------------------- #
 #
 KCTL_BIN="/usr/local/bin/"
@@ -40,6 +70,7 @@ KCTL_CHECKSUM_URL="$KCTL_REL_URL.sha256"
 
 
 
+
 # --------------------------------- TERRAFORM -------------------------------- #
 #
 TF_REPO_URL="https://apt.releases.hashicorp.com"
@@ -50,15 +81,17 @@ TF_APT_SLIST="/etc/apt/sources.list.d/hashicorp.list"
 
 
 
+
 # ------------------------------- AWS ---------------------------------------- #
 #
 AWS_PUB_KEY="LS0tLS1CRUdJTiBQR1AgUFVCTElDIEtFWSBCTE9DSy0tLS0tCgptUUlOQkYyQ3I3VUJFQURKWkhjZ3VzT0psN0VOU3l1bVhoODV6MFRSVjB4Sm9yTTJCL0pMMGtIT3lpZ1FsdVVHClpNTGhFTmFHMGJZYXRkcktQKzNIOTFsdkswNTBwWHduTy9SN2ZCL0ZTVG91a2k0Y2lJeDVPdUxsbkpaSXhTengKUHFHbDBta3hJbUxOYkdXb2k2THRvMExZeHFITjJpUXR6bHdUVm1xOTczM3pkM1hmY1hyWjMrTGJsSEFnRXQ1RwpUZk54RUtKOHNvUEx5V213REg2SFdDbmpaL2FJUVJCVElRMDV1VmVFb1l4U2g2d09haTdzcy9LdmVvU05CYll6CmdiZHpvcUkyWThjZ0gybmJmZ3AzRFNhc2FMWkVkQ1NzSXNLMXUwNUNpbkU3azJxWjdLZ0tBVUljVC9jUi9ncmsKQzZWd3NuRFUwT1VDaWRlWGNROFdlSHV0cXZnWkgxSmdLRGJ6bm9JemVRSEpEMjM4R0V1K2VLaFJIY3o4L2plRwo5NHprY2dKT3ozS2JaR1lNaVRoMjc3RnZqOXp6dlpzYk1CQ2VkVjFCVGczVHFndmRYNGJka2hmNWNIKzdOdFdPCmxyRmo2VXdBc0d1a0JUQU94QzBsL2RuU21aaEo3WjFLbUVXaWxyby9nT3JqdE94cVJRdXRsSXFHMjJUYXFvUEcKZllWTitlbjNad2J0OTdrY2daRHdxYnV5a050NjRvWldjNFhLQ2EzbXByRUdDM0liSlRCRnFnbFhtWjdsOXl3RwpFRVVKWU9sYjJYclN1UFdtbDM5YmVXZEtNOGt6cjFPam5sT202K2xwVFJDQmZvMHdhOUY4WVpSaEhQQWt3S2tYClhEZU9HcFdSajRvaE94MGQyR1dreVY1eHlOMTRwMnRRT0NkT09EbXo4MHlVVGdScFBWUVV0T0VoWFFBUkFRQUIKdENGQlYxTWdRMHhKSUZSbFlXMGdQR0YzY3kxamJHbEFZVzFoZW05dUxtTnZiVDZKQWxRRUV3RUlBRDRXSVFUNwpYYmQvMWNFWXVBVVJyYWltTVFyTVJuSkhYQVVDWFlLdnRRSWJBd1VKQjRUT0FBVUxDUWdIQWdZVkNna0lDd0lFCkZnSURBUUllQVFJWGdBQUtDUkNtTVFyTVJuSkhYSklYRUFDaExVSWtnODB1UFVrR2pFM2planZRU0ExYVd1QU0KeXp5NmZkcGRsUlV6Nk02bm1zVWhPRXhqVkl2aWJFSnB6SzVtaHVTWjRsYjB2SjJaVVBnQ3Y0enMybkJkN0JHSgpNeEtpV2dCUmVHdlRkcVowU3p5WUg0UFlDSlNFNzMyeC9GdzloZm5oMWRNVFhOY3JRWHp3T21tRk5OZWdHME94CmF1K1ZucGNSNUt6M3NtaVRySXdaYlJ1ZG8xaWpoQ1lQUTd0NUNNcDlrakM2Yk9idnkxaFNJZzJ4TmJNQU4vRG8KaWtlYkFsMzZ1QTZZL1VjempqM0d4Wlc0WldlRmlyTWlkS2J0cXZVejJ5MFVGc3pvYmppQlNxWlpIQ3JlQzM0QgpodzliRk5wdVdDLzBTclhnb2hkc2M2dks1MHBER2RWNWtNMnFvOXRNUS9penNBd1RoL2QvR3padjhINGxWOWVPCnRFaXMrRXBSNDk3UGF4S0toOXRKZjBONlExWUxSSG9mNXhlUFp0T0lsUzNnZnZzSDVoWEEzSEo5eUl4YjhUMEgKUVltVnIzYUlVZXMyMGk2bWVJM2Z1VjM2VkZ1cHdmclRLYUw3Vlhuc3JLMmZxNWNSdnlKTE56WHVjZzBXQWpQRgpSckFHTHpZN25QMXhlZzFhMGFlUCtwZHNxanFsUEpvbThPQ1djMSs2RFdiZzBqc0M3NFdvZXNBcWdCSXRPRE1CCnJzYWwxeS9xK2JQenBzbldqekhWOCsxL0V0Wm1TYzhaVUdTSk9Qa2ZDN2hPYm5ma2wxOGgrMVF0S1RqWm1lNGQKSDE3Z3NCSnIrb3B3SncvWmlvMkxNalFCT3FsbTNLMUE0ekZUaDd3QkM3SGU2S1BRZWExcDJYQU1ndHZBVHROZQpZTFpBVEhaS1RKeWlxQT09Cj12WU9rCi0tLS0tRU5EIFBHUCBQVUJMSUMgS0VZIEJMT0NLLS0tLS0K"
 AWS_URL="https://awscli.amazonaws.com"
-AWS_VERSION="2.0.30"
+AWS_VERSION="2.7.31"
 AWS_REL="awscli-exe-${OS}-${ARCH_ALT}-${AWS_VERSION}"
 AWS_REL_URL="${AWS_URL}/${AWS_REL}.zip"
 #
 # ------------------------------- /AWS --------------------------------------- #
+
 
 
 

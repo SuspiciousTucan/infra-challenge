@@ -4,15 +4,23 @@ source "/tmp/config"
 
 
 
+
 # ------------------------------- GENERIC ------------------------------------ #
 #
 apt-get update && \
 apt-get install -y \
 	gnupg \
 	software-properties-common \
-	unzip
+	lsb-release \
+	ca-certificates \
+	unzip \
+	apt-transport-https \
+	ntpdate
+
+chown -R vagrant:vagrant /home/vagrant/.aws /home/vagrant/.ssh
 #
 # ------------------------------- /GENERIC ----------------------------------- #
+
 
 
 
@@ -28,6 +36,43 @@ echo "export PATH=\$PATH:$GO_BIN" >> /etc/profile
 
 
 
+
+# ------------------------------- DOCKER ------------------------------------- #
+#
+wget -O- -o "/tmp/wget_docker.log" "$DOCKER_REPO_URL/gpg" | \
+		gpg --dearmor -o $DOCKER_KEYRING
+
+gpg --no-default-keyring \
+    --keyring $DOCKER_KEYRING \
+    --fingerprint
+
+echo "deb [arch=$ARCH signed-by=$DOCKER_KEYRING] $DOCKER_REPO_URL $DISTRO stable" | \
+	tee $DOCKER_APT_SLIST > /dev/null
+
+usermod -a -G docker vagrant
+#
+# ------------------------------- /DOCKER ------------------------------------ #
+
+
+
+
+# -------------------------------- HELM -------------------------------------- #
+#
+wget -O- -o "/tmp/wget_docker.log" "$HELM_KEYRING_URL" | \
+	gpg --dearmor -o $HELM_KEYRING
+
+gpg --no-default-keyring \
+    --keyring $HELM_KEYRING \
+    --fingerprint
+
+echo "deb [arch=$ARCH signed-by=$HELM_KEYRING] $HELM_REL_URL all main" | \
+	tee $HELM_APT_LIST
+#
+# -------------------------------- /HELM ------------------------------------- #
+
+
+
+
 # ------------------------------- K8S ---------------------------------------- #
 #
 wget -O "kubectl" -o "/tmp/wget_kctl.log" "$KCTL_REL_URL"
@@ -38,24 +83,21 @@ rm "kubectl"
 
 
 
+
 # ------------------------------- TERRAFORM ---------------------------------- #
 #
 wget -O- -o "/tmp/wget_tf.log" "$TF_REPO_URL/gpg" | \
-    gpg --dearmor | \
-    sudo tee $TF_KEYRING
+		gpg --dearmor -o $TF_KEYRING
 
 gpg --no-default-keyring \
     --keyring $TF_KEYRING \
     --fingerprint
 
-echo "deb [signed-by=$TF_KEYRING] \
-    $TF_REPO_URL $DISTRO main" | \
-    sudo tee $TF_APT_SLIST
-
-apt-get update && \
-apt-get install -y terraform
+echo "deb [signed-by=$TF_KEYRING] $TF_REPO_URL $DISTRO main" | \
+tee $TF_APT_SLIST > /dev/null
 #
 # ------------------------------- /TERRAFORM --------------------------------- #
+
 
 
 
@@ -71,6 +113,7 @@ rm "awscliv2.zip" "awscliv2.sig" "aws.pub"
 
 
 
+
 # ------------------------------- EKSCTL ------------------------------------- #
 #
 wget -O "eksctl.tar.gz" -o "/tmp/wget_eksctl.log" "$EKSCTL_REL_URL"
@@ -78,3 +121,13 @@ tar -xzf "eksctl.tar.gz" "eksctl" && install -o root -g root -m 0755 "eksctl" "$
 rm "eksctl.tar.gz" "eksctl"
 #
 # ------------------------------- /EKSCTL ------------------------------------ #
+
+
+
+
+# --------------------------------- INSTALL ---------------------------------- #
+#
+apt-get update && \
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin terraform helm
+#
+# --------------------------------- /INSTALL --------------------------------- #
