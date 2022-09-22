@@ -1,0 +1,129 @@
+{{- if .Values.server.enabled -}}
+---
+apiVersion: {{ template "chart.server.deployment.apiVersion" . }}
+kind: "Deployment"
+metadata:
+  name: "{{ template "chart.server.fullname" . }}"
+{{- if .Values.server.deploymentAnnotations }}
+  annotations:
+    {{ toYaml .Values.server.deploymentAnnotations | nindent 4 }}
+{{- end }}
+  labels:
+  {{- include "chart.server.labels" . | nindent 4 }}
+{{ include "chart.namespace" . | indent 2 }}
+spec:
+  replicas: {{ .Values.server.replicas }}
+  selector:
+    matchLabels:
+      {{- include "chart.server.matchLabels" . | nindent 6 }}
+  {{- if .Values.server.strategy }}
+  strategy:
+    {{- if eq .Values.server.strategy "Recreate" }}
+    type: "Recreate"
+    rollingUpdate: null
+    {{- end -}}
+    {{ if eq .Values.server.strategy "RollingUpdate" }}
+    type: "RollingUpdate"
+    rollingUpdate:
+      maxSurge: {{ .Values.server.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.server.rollingUpdate.maxUnavailable }}
+    {{- end }}
+  {{- end }}
+  template:
+    metadata:
+      {{- if .Values.server.podAnnotations }}
+      annotations:
+        {{ toYaml .Values.server.podAnnotations | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "chart.server.labels" . | nindent 8 }}
+      annotations:
+        {{- if not .Values.server.greeter.configFromSecret }}
+        checksum/config: {{ include (print $.Template.BasePath "/server/configMap.yml") . | sha256sum | quote }}
+        {{- else }}
+        checksum/secret: {{ include (print $.Template.BasePath "/server/secret.yml") . | sha256sum | quote }}
+        {{- end }}
+    spec:
+{{- if .Values.server.priorityClassName }}
+      priorityClassName: "{{ .Values.server.priorityClassName }}"
+{{- end }}
+{{- if .Values.server.schedulerName }}
+      schedulerName: "{{ .Values.server.schedulerName }}"
+{{- end }}
+      {{- if .Values.server.extraInitContainers }}
+      initContainers:
+        {{ toYaml .Values.server.extraInitContainers | indent 8 }}
+      {{- end }}
+      containers:
+        - name: "{{ template "chart.server.fullname" . }}-greeter"
+          image: "{{ .Values.server.greeter.image.repository }}{{- if ne "" .Values.server.greeter.image.repository }}/{{- end }}{{ .Values.server.greeter.image.name }}{{- if ne "" .Values.server.greeter.image.tag }}:{{- end }}{{ .Values.server.greeter.image.tag }}"
+          imagePullPolicy: "{{ .Values.server.greeter.image.pullPolicy }}"
+          {{- with .Values.server.greeter.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.server.greeter.extraArgs }}
+          args:
+          {{- range $key, $value := .Values.server.greeter.extraArgs }}
+            - --{{ $key }}={{ $value }}
+          {{- end }}
+          {{- end }}
+          env:
+            - name: HOSTNAME
+              valueFrom:
+              {{- if empty .Values.server.greeter.configFromSecret }}
+                configMapKeyRef:
+                  name: "{{ if .Values.server.greeter.configMapOverrideName }}{{ .Release.Name }}-{{ .Values.server.greeter.configMapOverrideName }}{{- else }}{{ template "chart.server.fullname" . }}{{- end }}"
+              {{- else }}
+                secretKeyRef:
+                  name: "{{ if .Values.server.greeter.secretOverrideName }}{{ .Release.Name }}-{{ .Values.server.greeter.secretOverrideName }}{{- else }}{{ template "chart.server.fullname" . }}{{- end }}"
+              {{- end }}
+                  key: HOSTNAME
+                  optional: false
+          ports:
+            - name: "http"
+              containerPort: 80
+            - name: "https"
+              containerPort: 443
+          resources:
+{{ toYaml .Values.server.greeter.resources | indent 12 }}
+      volumes: []
+    {{- if .Values.server.hostNetwork }}
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+    {{- else }}
+      dnsPolicy: {{ .Values.server.dnsPolicy }}
+    {{- end }}
+    {{- if .Values.server.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.server.hostAliases | indent 8 }}
+    {{- end }}
+    {{- if .Values.server.dnsConfig }}
+      dnsConfig:
+{{ toYaml .Values.server.dnsConfig | indent 8 }}
+    {{- end }}
+    {{- if .Values.server.securityContext }}
+      securityContext:
+{{ toYaml .Values.server.securityContext | indent 8 }}
+    {{- end }}
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
+    {{- end }}
+    {{- if .Values.server.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.server.nodeSelector | indent 8 }}
+    {{- end }}
+    {{- if .Values.server.tolerations }}
+      tolerations:
+{{ toYaml .Values.server.tolerations | indent 8 }}
+    {{- end }}
+    {{- if .Values.server.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ toYaml .Values.server.topologySpreadConstraints | indent 8 }}
+    {{- end }}
+    {{- if .Values.server.affinity }}
+    affinity:
+{{ toYaml .Values.server.affinity | indent 8 }}
+    {{- end }}
+{{- end -}}

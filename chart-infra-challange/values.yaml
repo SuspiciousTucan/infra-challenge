@@ -1,0 +1,144 @@
+fullnameOverride: ""
+
+nameOverride: ""
+
+forceNamespace: ""
+
+imagePullSecrets: []
+# - name: my-image-pull-secret
+
+# TODO
+serviceAccounts:
+  server:
+    create: false
+    name: ""
+    annotations: {}
+
+
+server:
+  enabled: true
+
+  name: "server"
+  fullnameOverride: ""
+  nameOverride: ""
+
+  replicas: 1
+
+  priorityClassName: ""
+  # schedulerName: ""
+
+  # Required for use in managed kubernetes clusters (such as AWS EKS) with custom CNI (such as calico),
+  # because control-plane managed by AWS cannot communicate with pods' IP CIDR and admission webhooks are not working
+  ## source: https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus/values.yaml
+  hostNetwork: false
+
+  dnsPolicy: "ClusterFirst"
+  dnsConfig: {}
+
+  hostAliases: []
+  #   - ip: "127.0.0.1"
+  #     hostnames:
+  #       - "example.com"
+
+  extraInitContainers: []
+
+  deploymentAnnotations: {}
+  podAnnotations: {}
+  secretAnnotations: {}
+  configMapAnnotations: {}
+
+  strategy: Recreate
+  rollingUpdate: {}
+  # strategy: RollingUpdate
+  # rollingUpdate:
+  #   maxSurge: 1
+  #   maxUnavailable: 1
+
+  securityContext: {}
+    # runAsUser: 65534
+    # runAsNonRoot: true
+    # runAsGroup: 65534
+    # fsGroup: 65534
+
+  nodeSelector: {}
+
+  tolerations: []
+    # - key: "key"
+    #   operator: "Equal|Exists"
+    #   value: "value"
+    #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+
+  topologySpreadConstraints: []
+  #   - maxSkew:
+  #     minDomains:
+  #     topologyKey:
+  #     whenUnsatisfiable:
+  #     labelSelector:
+  #     matchLabelKeys:
+  #     nodeAffinityPolicy:
+  #     nodeTaintsPolicy:
+
+  affinity: {}
+
+  # TODO : VPA & HPA
+  # ## Vertical Pod Autoscaler config
+  # ## Ref: https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler
+  # verticalAutoscaler:
+  #   ## If true a VPA object will be created for the controller based on above configs
+  #   enabled: false
+  #   # updateMode: "Auto"
+  #   # containerPolicies:
+  #   # - containerName: ''
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations: {}
+    hosts: []
+    path: /
+    pathType: Prefix
+    extraPaths: []
+    tls: []
+
+  service:
+    enabled: true
+
+    type: ClusterIP
+
+    clusterIP: ""
+
+    externalIPs: []
+
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+
+    sessionAffinity: None
+
+    annotations: {}
+
+    http:
+      servicePort: 80
+    https:
+      servicePort: 443
+
+  greeter:
+    image:
+      repository: ""
+      name: ""
+      tag: ""
+      pullPolicy: "IfNotPresent"
+    securityContext: {}
+    extraArgs: {}
+    configFromSecret: false
+    secretOverrideName: ""
+    configMapOverrideName: ""
+
+    resources: {}
+      # limits:
+      #   cpu: 500m
+      #   memory: 512Mi
+      # requests:
+      #   cpu: 500m
+      #   memory: 512Mi
+    env:
+      HOSTNAME: "my-verry-special-host"

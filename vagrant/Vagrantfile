@@ -25,6 +25,8 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder "..", "/home/vagrant/infra-challenge"
 
 	config.vm.provision "file", source: "./config", destination: "/tmp/config"
+  config.vm.provision "file", source: "~/.aws/", destination: "$HOME/.aws"
+  config.vm.provision "file", source: "~/.ssh/", destination: "$HOME/.ssh"
 
   config.vm.provision :shell do |shell|
       shell.path = "root-provisioning.sh"

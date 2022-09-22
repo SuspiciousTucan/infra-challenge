@@ -1,0 +1,50 @@
+{{- if and ( .Values.server.enabled ) ( .Values.server.service.enabled ) -}}
+---
+apiVersion: {{ template "chart.server.service.apiVersion" . }}
+kind: "Service"
+metadata:
+  name: "{{ template "chart.server.fullname" . }}"
+{{- if .Values.server.service.annotations }}
+  annotations:
+    {{- toYaml .Values.server.service.annotations | nindent 4 }}
+{{- end }}
+  labels:
+  {{- include "chart.server.labels" . | nindent 4 }}
+{{ include "chart.namespace" . | indent 2 }}
+spec:
+  type: "{{ .Values.server.service.type }}"
+  selector:
+    {{- include "chart.server.matchLabels" . | nindent 4 }}
+{{- if .Values.server.service.clusterIP }}
+  clusterIP: {{ .Values.server.service.clusterIP }}
+{{- end }}
+{{- if .Values.server.service.externalIPs }}
+  externalIPs:
+{{ toYaml .Values.server.service.externalIPs | indent 4 }}
+{{- end }}
+{{- if .Values.server.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.server.service.loadBalancerIP }}
+{{- end }}
+{{- if .Values.server.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+  {{- range $cidr := .Values.server.service.loadBalancerSourceRanges }}
+    - {{ $cidr }}
+  {{- end }}
+{{- end }}
+  ports:
+    - name: http
+      port: {{ .Values.server.service.http.servicePort }}
+      protocol: TCP
+      targetPort: 80
+    {{- if .Values.server.service.nodePort }}
+      nodePort: {{ .Values.server.service.nodePort }}
+    {{- end }}
+    - name: https
+      port: {{ .Values.server.service.https.servicePort }}
+      protocol: TCP
+      targetPort: 443
+    {{- if .Values.server.service.nodePort }}
+      nodePort: {{ .Values.server.service.nodePort }}
+    {{- end }}
+  sessionAffinity: {{ .Values.server.service.sessionAffinity }}
+{{- end -}}

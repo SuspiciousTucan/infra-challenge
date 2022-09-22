@@ -1,0 +1,90 @@
+# ------------------------------- NLB & ALB ---------------------------------- #
+#
+access_key = ""
+secret_key = ""
+#
+# ------------------------------- NLB & ALB ---------------------------------- #
+
+
+
+
+# ------------------------------- NLB & ALB ---------------------------------- #
+#
+aws_load_balancer_controller_sa_name = "aws-load-balancer-controller"
+aws_load_balancer_controller_namespace = "kube-system"
+#
+# ------------------------------- /NLB & ALB --------------------------------- #
+
+
+
+
+# ---------------------------------- ECR ------------------------------------- #
+#
+ecr_repository_name = "hivemind-hiring-challange"
+ecr_repository_force_delete = true
+#
+# ---------------------------------- /ECR ------------------------------------ #
+
+
+
+
+# ---------------------------------- EKS ------------------------------------- #
+#
+eks_cluster_name = "hivemind-hiring-challange"
+
+eks_ssh_access_keys = [
+	{
+		key_name = "tucan"
+		public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGgCwfSHdnk62aSdxnpPG6km1zYqazy6Wh4GbRLjGInM filippo@filippo-System-Product-Name"
+	}
+]
+
+eks_resources_encryption = true
+eks_enable_logs = true
+eks_log_retention_period = 1
+
+eks_public_worker_node_group = {
+	capacity_type = "SPOT"
+	disk_size = 20
+	instance_type = [ "t3.medium" ]
+	desired_size = 2
+	max_size = 4
+	min_size = 1
+	max_unavailable_percentage = 50
+}
+
+eks_private_worker_node_group = {
+	capacity_type = "SPOT"
+	disk_size = 20
+	instance_type = [ "t3.medium" ]
+	desired_size = 2
+	max_size = 4
+	min_size = 1
+	max_unavailable_percentage = 50
+}
+#
+# ---------------------------------- /EKS ------------------------------------ #
+
+
+
+
+# ---------------------------------- HELM ------------------------------------ #
+#
+# helm_charts = [
+# 	{
+# 		name = "fluent-bit"
+# 		repository = "https://aws.github.io/eks-charts"
+# 		chart = "aws-for-fluent-bit"
+# 		namespace = "monitoring"
+# 		values_file = "./templates/helm/fluent_bit.yml"
+# 	},
+# 	{
+# 		name = "aws-load-balancer-controller"
+# 		repository = "https://aws.github.io/eks-charts"
+# 		chart = "aws-load-balancer-controller"
+# 		namespace = "kube-system"
+# 		values_file = "./templates/helm/fluent_bit.yml"
+# 	},
+# ]
+#
+# ---------------------------------- /HELM ----------------------------------- #

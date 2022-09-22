@@ -1,1 +1,5 @@
 /vagrant/.vagrant
+**/.terraform/*
+*.plan
+*.tfstate*
+*.tfvars

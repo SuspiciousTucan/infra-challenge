@@ -14,7 +14,14 @@ func main() {
 }
 
 func HelloServer(w http.ResponseWriter, r *http.Request) {
-	fmtStr := fmt.Sprintf("Hello, %s! I'm %s", GetIPFromRequest(r), os.Getenv("HOSTNAME"))
+	params := r.URL.Query()
+	name := params.Get("name")
+	fmtStr := ""
+	if name == "" {
+		fmtStr = fmt.Sprintf("Hello, %s! I'm %s. Seems like you missed an opportunity to show your name. Add it as a query string to the URL (i.e. http://some.end.point.com/?name=your-beautiful-name )", GetIPFromRequest(r), os.Getenv("HOSTNAME"))
+	} else {
+		fmtStr = fmt.Sprintf("Hello, %s! I'm %s, you seems to be %s", GetIPFromRequest(r), os.Getenv("HOSTNAME"), name)
+	}
 	fmt.Println(fmtStr)
 	fmt.Fprintln(w, fmtStr)
 }
