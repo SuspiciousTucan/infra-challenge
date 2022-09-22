@@ -1,0 +1,16 @@
+{{- if and ( .Values.server.enabled ) ( and ( empty .Values.server.greeter.configMapOverrideName ) ( empty .Values.server.greeter.configFromSecret) ) -}}
+---
+apiVersion: {{ template "chart.server.configMap.apiVersion" . }}
+kind: "ConfigMap"
+metadata:
+  name: "{{ template "chart.server.fullname" . }}"
+{{- if .Values.server.configMapAnnotations }}
+  annotations:
+    {{ toYaml .Values.server.configMapAnnotations | nindent 4 }}
+{{- end }}
+  labels:
+  {{- include "chart.server.labels" . | nindent 4 }}
+{{ include "chart.namespace" . | indent 2 }}
+data:
+    {{- include "chart.server.greeter.env_" . | indent 4 }}
+{{- end -}}
